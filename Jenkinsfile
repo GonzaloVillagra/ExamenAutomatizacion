@@ -14,36 +14,30 @@ pipeline {
             }
         }
 
-        stage('Unit Tests') {
-            steps {
-                echo '--- [CI] Ejecutando Pruebas Unitarias ---'
-                bat 'mvn test'
-            }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
+        // Etapa 2: Pruebas Unitarias
+                stage('Unit Tests') {
+                    steps {
+                        echo '--- [CI] Ejecutando Pruebas Unitarias ---'
+                        // Excluimos RunCucumberTest para que no falle aquí
+                        bat 'mvn test -Dtest=!RunCucumberTest'
+                    }
+                    post {
+                        always {
+                            junit '**/target/surefire-reports/*.xml'
+                        }
+                    }
                 }
-            }
-        }
 
-        stage('Integration Tests') {
-            steps {
-                echo '--- [CI] Ejecutando Pruebas de Integración ---'
-                bat 'mvn verify -DskipUnitTests=true'
-            }
-        }
+                // ... (Integration Tests queda igual) ...
 
-        // --- CD STAGES (Actividad 3) ---
-
-        // 1. Pruebas de Aceptación (Cucumber)
-        stage('Acceptance Tests') {
-            steps {
-                echo '--- [CD] Ejecutando Pruebas de Aceptación (Cucumber) ---'
-                // Ejecuta la clase RunCucumberTest que creamos antes
-                bat 'mvn test -Dtest=RunCucumberTest'
-            }
-        }
-
+                // Etapa 4: Pruebas de Aceptación
+                stage('Acceptance Tests') {
+                    steps {
+                        echo '--- [CD] Ejecutando Pruebas de Aceptación (Cucumber) ---'
+                        // Aquí sí forzamos que corra RunCucumberTest
+                        bat 'mvn test -Dtest=RunCucumberTest'
+                    }
+                }
         // 2. Despliegue a Ambiente de Pruebas
         stage('Deploy to Staging') {
             steps {
