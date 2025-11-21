@@ -25,7 +25,6 @@ pipeline {
                 stage('Acceptance Tests') {
                     steps {
                         echo '--- [CD] Ejecutando Pruebas de Aceptación (Cucumber) ---'
-                        // Aquí sí forzamos que corra RunCucumberTest
                         bat 'mvn test -Dtest=RunCucumberTest'
                     }
                 }
