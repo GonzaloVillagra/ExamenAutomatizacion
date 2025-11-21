@@ -49,7 +49,8 @@ pipeline {
             steps {
                 echo '--- [CD] Desplegando a Staging ---'
                 // Simulamos un despliegue copiando el jar a una carpeta temp
-                bat 'mkdir C:\\temp\\deploy_staging || ver>nul'
+                // Usamos "mkdir ... || ver>nul" para que no falle si la carpeta ya existe
+                bat 'if not exist C:\\temp\\deploy_staging mkdir C:\\temp\\deploy_staging'
                 bat 'copy target\\*.jar C:\\temp\\deploy_staging\\'
                 echo 'Despliegue exitoso en ambiente de prueba.'
             }
