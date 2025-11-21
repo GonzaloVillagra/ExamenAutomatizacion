@@ -2,25 +2,21 @@ pipeline {
     agent any
 
     tools {
-        // Asegúrate de que en "Global Tool Configuration" de Jenkins
-        // agregaste Maven con el nombre 'maven' (minúsculas)
         maven 'maven'
     }
 
     stages {
-        // Etapa 1: Construcción (Build)
+        // --- CI STAGES (Actividad 2) ---
         stage('Build') {
             steps {
-                echo '--- Iniciando etapa de Build ---'
-                // CAMBIO: Usamos 'bat' en lugar de 'sh' para Windows
+                echo '--- [CI] Iniciando Build ---'
                 bat 'mvn clean package -DskipTests'
             }
         }
 
-        // Etapa 2: Pruebas Unitarias (Unit Tests)
         stage('Unit Tests') {
             steps {
-                echo '--- Ejecutando Pruebas Unitarias ---'
+                echo '--- [CI] Ejecutando Pruebas Unitarias ---'
                 bat 'mvn test'
             }
             post {
@@ -30,12 +26,44 @@ pipeline {
             }
         }
 
-        // Etapa 3: Pruebas de Integración
         stage('Integration Tests') {
             steps {
-                echo '--- Ejecutando Pruebas de Integración ---'
+                echo '--- [CI] Ejecutando Pruebas de Integración ---'
                 bat 'mvn verify -DskipUnitTests=true'
             }
+        }
+
+        // --- CD STAGES (Actividad 3) ---
+
+        // 1. Pruebas de Aceptación (Cucumber)
+        stage('Acceptance Tests') {
+            steps {
+                echo '--- [CD] Ejecutando Pruebas de Aceptación (Cucumber) ---'
+                // Ejecuta la clase RunCucumberTest que creamos antes
+                bat 'mvn test -Dtest=RunCucumberTest'
+            }
+        }
+
+        // 2. Despliegue a Ambiente de Pruebas
+        stage('Deploy to Staging') {
+            steps {
+                echo '--- [CD] Desplegando a Staging ---'
+                // Simulamos un despliegue copiando el jar a una carpeta temp
+                bat 'mkdir C:\\temp\\deploy_staging || ver>nul'
+                bat 'copy target\\*.jar C:\\temp\\deploy_staging\\'
+                echo 'Despliegue exitoso en ambiente de prueba.'
+            }
+        }
+    }
+
+    // Mecanismo de Rollback Automático
+    post {
+        failure {
+            echo '--- [FALLO] El Pipeline ha fallado. Ejecutando Rollback... ---'
+            bat 'rollback.bat'
+        }
+        success {
+            echo '--- [EXITO] Pipeline completado correctamente. ---'
         }
     }
 }
